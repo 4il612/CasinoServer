@@ -1,14 +1,30 @@
-import { Controller } from '@nestjs/common';
-import { Crud, CrudController } from '@nestjsx/crud';
-import { Machine } from './machine.entity';
+import { Controller, Post, Body } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { MachineService } from './machine.service';
+import { Machine } from './machine.entity';
+import { CreateMachineDto } from './machine.dto';
 
-@Crud({
-  model: {
-    type: Machine,
-  },
-})
+@ApiTags('Machines') // Определение тега для документации
 @Controller('machines')
-export class MachineController implements CrudController<Machine> {
-  constructor(public service: MachineService) {}
+export class MachineController {
+  constructor(private machineService: MachineService) {}
+
+  @Post('create')
+  @ApiOperation({ summary: 'Create a new machine' }) // Описание операции
+  @ApiBody({
+    type: CreateMachineDto,
+    examples: {
+      a: {
+        value: { name: 'NewMachine', ownerId: 2 } as CreateMachineDto,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'The machine has been successfully created.',
+    type: Machine,
+  }) // Описание ответа
+  async createMachine(@Body() machineDto: CreateMachineDto): Promise<Machine> {
+    return this.machineService.createMachine(machineDto);
+  }
 }
